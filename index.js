@@ -27,10 +27,27 @@ app.get("/", async (request, response) => {
 
 app.get("/nudgebacks", async (request, response) => {
   const postcodes = request.query.postcode;
+  let nudgebackInfo = [];
+
+  async function getCoords(record) {
+    const coords = await knex.raw(`EXEC [dbo].[GetCoordinateData] @District = '${record.District}'`);
+
+    nudgebackInfo.push({
+      district: record.District,
+      currentlyCovered: record.CurrentlyCovered,
+      nudgecount: record.Nudgecount,
+      paths: coords,
+    });
+  }
 
   try {
-    const testRecord = await knex.raw(`EXEC [dbo].[GetNudgebackData] @DistrictCode = '${postcodes}'`);
-    response.send(testRecord);
+    const rawData = await knex.raw(`EXEC [dbo].[GetNudgebackData] @DistrictCode = '${postcodes}'`);
+
+    for (const data of rawData) {
+      await getCoords(data);
+    }
+
+    response.json({ result: nudgebackInfo });
   } catch (err) {
     console.log(err);
   }
