@@ -25,13 +25,12 @@ app.get("/", async (request, response) => {
   }
 });
 
-app.get("/sp", async (request, response) => {
-  const postcodes = request.query.postcodes;
-  console.log(`💩 - file: index.js - line 30 - app.get - postcodes`, postcodes);
+app.get("/nudgebacks", async (request, response) => {
+  const postcodes = request.query.postcode;
 
   try {
     const testRecord = await knex.raw(`EXEC [dbo].[GetNudgebackData] @DistrictCode = '${postcodes}'`);
-    response.send(`Did we get anything from the database? ${JSON.stringify(testRecord)}`);
+    response.send(testRecord);
   } catch (err) {
     console.log(err);
   }
